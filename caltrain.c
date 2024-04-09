@@ -15,15 +15,17 @@ void station_init(struct station *station) {
 void station_load_train(struct station *station, int count) {   
     pthread_mutex_lock(&(station->mutex)); 
     
-    if (!count || !station->passengers_waiting) { // no free seats available or no passengers waiting
-        pthread_mutex_unlock(&(station->mutex)); // release the lock and leave critical section
+    // no available seats available or no passengers waiting
+    if (!count || !station->passengers_waiting) {
+        pthread_mutex_unlock(&(station->mutex));
         return; // train must leave the station promptly
     }
+
     station->available_seats = count;
-    pthread_cond_broadcast(&(station->train_arrival)); // wake up all passengers waiting for a free seat
+    pthread_cond_broadcast(&(station->train_arrival)); // wake up all passengers waiting for a available seat
     pthread_cond_wait(&(station->train_departure), &(station->mutex)); // waiting for all passengers to get on board
     station->available_seats = 0;
-    
+
     pthread_mutex_unlock(&(station->mutex));
 }
 
@@ -31,8 +33,10 @@ void station_wait_for_train(struct station *station) {
     pthread_mutex_lock(&(station->mutex));
 
     station->passengers_waiting++;
+
+    // Wait until there are available seats on the train
     while (!station->available_seats)
-        pthread_cond_wait(&(station->train_arrival), &(station->mutex)); // waiting for a train with free seats
+        pthread_cond_wait(&(station->train_arrival), &(station->mutex));
 
     station->passengers_waiting--;
     station->passengers_boarded++;
@@ -50,3 +54,4 @@ void station_on_board(struct station *station) {
     
     pthread_mutex_unlock(&(station->mutex));
 }
+
