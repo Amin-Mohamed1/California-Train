@@ -43,10 +43,10 @@ void station_wait_for_train(struct station *station) {
 
 void station_on_board(struct station *station) {
     pthread_mutex_lock(&(station->mutex));
-
-    if (station->passengers_boarded == 0 || station->available_seats == 0) {
-        pthread_cond_signal(&(station->train_arrival)); // Signal train departure if no passengers to board or no available seats
-    }
-
+    
+    station->passengers_boarded--;
+    if (!station->passengers_boarded && !(station->passengers_waiting && station->available_seats)) // all leaving passengers are on board, and no other passengers can get on the train
+        pthread_cond_signal(&(station->train_departure));
+    
     pthread_mutex_unlock(&(station->mutex));
 }
