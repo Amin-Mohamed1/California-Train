@@ -2,7 +2,7 @@
 
 
 struct station {
-	int available_seats;      // Number of available seats in the train
+    int available_seats;      // Number of available seats in the train
     int passengers_waiting;   // Number of passengers waiting at the station
     int passengers_boarded;   // Number of passengers who have boarded the train
     
